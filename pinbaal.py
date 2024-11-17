@@ -16,8 +16,8 @@ space.gravity = 0, 600
 white = (255, 255, 255)
 black = (0, 0, 0)
 red = (255, 0, 0)
-font1 = font.Font(None, 50)
-font2 = font.Font(None, 40)
+font1 = font.Font("Fonts\\Daydream.ttf", 25)
+font2 = font.Font("Fonts\\Daydream.ttf", 40)
 font3 = font.Font(None, 30)
 
 clock = time.Clock()
@@ -30,11 +30,11 @@ def add_energy(e):
     global total_energy 
     total_energy += e
     surfaces = [
-    font1.render(str(co), True, (255, 255, 255))  # Render co0, co1, ..., co4
+    font1.render(str(co), True, (255, 249, 189))  # Render co0, co1, ..., co4
     for co in particle_counter]
-    positions=((600,400),(600,500),(700,400),(700,500),(500,400))
-    score = font1.render(str(total_energy), True, (255, 255, 255))  # White text color
-    screen.blit(score, (600, 250))  
+    positions=((510,350),(670,350),(600,420),(510,500),(690,500))
+    score = font2.render(str(round(total_energy)), True, (255, 249, 189))  # White text color
+    screen.blit(score, (600, 185))  
     for surface, position in zip(surfaces, positions):
         screen.blit(surface, position)
 
@@ -62,11 +62,11 @@ def pixelize(surface, pixel_size):
     return pixelized_surface
 
 #particles properties
-c1=(0,0,0)
-c2=(155,0,0)
-c3=(0,155,0)
-c4=(0,0,155)
-c5=(120,120,0)
+c1=(255,230,0)
+c2=(100,38,255)
+c3=(255,36,72)
+c4=(17,173,72)
+c5=(96,204,214)
 m1=1
 m2=2
 m3=3
@@ -97,11 +97,12 @@ def col(ds ,position, background):
         p=ds[i][0]
         ball_surface = pygame.Surface((40, 40), pygame.SRCALPHA)
         color = particles[p][0]  # Varying colors
-        pygame.draw.circle(ball_surface, color, (20, 20), 4)
+        pygame.draw.circle(ball_surface, color, (20, 20), 6)
         ball_surfaces.append(ball_surface)
         positions.append(position)
         energy_out = 1/2*particles[p][1]*(abs(ds[i][0])+abs(ds[i][1]))
         add_energy(energy_out)
+        particle_counter[p]+=1
 
     x, y = position
 
@@ -200,7 +201,7 @@ class Base_ball:
     def __init__(self, x, y):
         self.body = Body(1, 200)
         self.body.position = x, y
-        self.shape = Circle(self.body, 8)
+        self.shape = Circle(self.body, 10)
         self.shape.elasticity = 0.75
         self.shape.friction = 0.5
         self.shape.collision_type = ball_c_t
@@ -304,8 +305,8 @@ gameframe_top = 50
 gameframe_bottom = 550
 gameframe_left = 50
 gameframe_right = 350
-left_base_bat = Base_bat(140, 500, 46, ((26*a, 6*a), (26*a, -6*a), (-26*a, 4*a), (-26*a, -4*a), (26*a, 0*a)))
-right_base_bat = Base_bat(260, 500, -46, ((26*a, 4*a), (26*a, -4*a), (-25*a, 6*a), (-25*a, -6*a), (-26*a, 0*a)))
+left_base_bat = Base_bat(140, 500, 46, ((25*a, 3*a), (25*a, -3*a), (-26*a, 4*a), (-26*a, -4*a), (26*a, 0*a)))
+right_base_bat = Base_bat(260, 500, -46, ((26*a, 4*a), (26*a, -4*a), (-25*a, 3*a), (-25*a, -3*a), (-26*a, 0*a)))
 
 base_ball = Base_ball(200, 180)
 
@@ -328,13 +329,13 @@ for post in range(15):
 
 
 Rectangle_object(25,300,0,(50,600))#left wall
-Rectangle_object(575,300,0,(450,600))#midle wall
+Rectangle_object(375,300,0,(50,600))#midle wall
 Rectangle_object(200,25,0,(299,50))
 Rectangle_object(200,25,0,(299,50))
 Rectangle_object(90,580,0,(100,180))
 Rectangle_object(310,580,0,(100,180))
 Rectangle_object(40,457,-45*(3.14/180),(100,200))
-Rectangle_object(360,457,45*(3.14/180),(100,200))
+Rectangle_object(325,462,45*(3.14/180),(60,150))
 Rectangle_object(50,50,45*(3.14/180),(50,50))
 Rectangle_object(350,50,-45*(3.14/180),(50,50))
 
@@ -354,9 +355,9 @@ running = True
 right = False
 left = False
 gui = pygame.image.load("img\\gui.png")
-gui1 = pygame.image.load("img\\gui1.png")
-background = pygame.Surface((800, 600))
-background.fill((0, 0, 0))  # Fill with black
+gui1 = pygame.image.load("img\\particles3.png")
+background = pygame.image.load("img\\background.png")
+#background.fill((0, 0, 0))  # Fill with black
 balls = []  # To store all `update_and_draw` functions
 balls.append(col([], (0,0), background))
 
@@ -416,6 +417,7 @@ while running:
     
     space.debug_draw(options)
     screen.blit(gui,(0,0))
+    screen.blit(gui1,(0,0))
     add_energy(0)
     #screen.blit(collection, (450,350))
     clock.tick(60)
