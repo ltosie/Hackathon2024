@@ -23,17 +23,20 @@ font3 = font.Font(None, 30)
 clock = time.Clock()
 lightx, lighty = 540, 1090
 total_energy = 0
+lives = 2;
 
-font = pygame.font.Font(None, 100)  # None uses the default font, 36 is the font size
+font = pygame.font.Font(None, 100)  
 def add_energy(e):
     global total_energy 
     total_energy += e
-    title = font1.render("TITLE", True, (255,255,255))
-    score_title = font3.render("COLLISION ENERGY", True, (255,255,255))
+    surfaces = [
+    font1.render(str(co), True, (255, 255, 255))  # Render co0, co1, ..., co4
+    for co in particle_counter]
+    positions=((600,400),(600,500),(700,400),(700,500),(500,400))
     score = font1.render(str(total_energy), True, (255, 255, 255))  # White text color
-    screen.blit(score, (600, 250))  # Position (100, 100) on the screen    
-    screen.blit(score_title,(500, 200))
-    screen.blit(title, (500,80))
+    screen.blit(score, (600, 250))  
+    for surface, position in zip(surfaces, positions):
+        screen.blit(surface, position)
 
 def take_image_ca(name):
     return image.load(name).convert_alpha()
@@ -58,23 +61,47 @@ def pixelize(surface, pixel_size):
 
     return pixelized_surface
 
-def inputs(n):
+#particles properties
+c1=(0,0,0)
+c2=(155,0,0)
+c3=(0,155,0)
+c4=(0,0,155)
+c5=(120,120,0)
+m1=1
+m2=2
+m3=3
+m4=4
+m5=5
+
+particles=[(c1,m1,"particle 1"),(c2,m2,"particle 2"),(c3,m3,"particle 3"),
+(c4,m4,"particle 4"),(c5,m5,"particle 5")]
+particle_counter=[0,0,0,0,0]
+
+
+def inputs(vx,vy):
     inputs =[]
-    for i in range(n):
-        inputs.append((random.uniform(-6,6), random.uniform(-6,6)))
+    a=0.005
+    d = random.randint(2,4)
+    for i in range(d):
+        p = random.randint(0,4)
+        inputs.append((p,random.uniform(-6+a*float(vx),6+a*float(vx)), random.uniform(-6+a*float(vy),6+a*float(vy))))
+
     return inputs
 
-def col(ds, tags, position, background):
+def col(ds ,position, background):
     """Show balls moving based on speeds in ds starting at positions."""
     ball_surfaces = []
     positions = []
-    for i in tags:
+    for i in range(len(ds)):
         # Create surfaces for each ball with a different color
+        p=ds[i][0]
         ball_surface = pygame.Surface((40, 40), pygame.SRCALPHA)
-        color = (i * 50 % 255, 255 - i * 50 % 255, (i * 100) % 255)  # Varying colors
+        color = particles[p][0]  # Varying colors
         pygame.draw.circle(ball_surface, color, (20, 20), 4)
         ball_surfaces.append(ball_surface)
         positions.append(position)
+        energy_out = 1/2*particles[p][1]*(abs(ds[i][0])+abs(ds[i][1]))
+        add_energy(energy_out)
 
     x, y = position
 
@@ -90,10 +117,10 @@ def col(ds, tags, position, background):
     def update_and_draw(screen):
         nonlocal positions, ds
         for i, (x,y) in enumerate(positions):
-            (vx,vy) = ds[i]
+            n,vx,vy = ds[i]
             if (vx,vy) != (0,0):
                 positions[i] = (x - vx, y - vy)
-                ds[i] = (slow(vx, 0.3), slow(vy, 0.3))
+                ds[i] = (n,slow(vx, 0.3), slow(vy, 0.3))
                 background.blit(ball_surfaces[i],(x-20,y-20))
         screen.blit(pixelize(background, 3), (0, 0))  # Blit the entire background to the screen
 
@@ -262,8 +289,8 @@ def collision_begin(arbiter, space, data):
     #                 #parse updated_content into variables
     #                 #begin_col()
     #                 break
-    tags = [0, 1, 2, 3]
-    balls.append(col(inputs(4), tags, shape2.body.position, background))
+    #tags = [0, 1, 2, 3]
+    balls.append(col(inputs(vx,vy), shape2.body.position, background))
     space.remove(shape2)
     return True
 
@@ -331,7 +358,7 @@ gui1 = pygame.image.load("img\\gui1.png")
 background = pygame.Surface((800, 600))
 background.fill((0, 0, 0))  # Fill with black
 balls = []  # To store all `update_and_draw` functions
-balls.append(col(inputs(0), [], (0,0), background))
+balls.append(col([], (0,0), background))
 
 while running:
     screen.fill((0,0,0))
@@ -370,11 +397,15 @@ while running:
 
     if base_ball.body.position[1] > 800:
         res = 1
+        lives -=1
     if res == 1:
         space.remove(base_ball.body, base_ball.shape)
         base_ball = Base_ball(300, 100)
         res = 0
         total_energy = 0
+        if lives == 0:
+            background.fill((0,0,0))
+
     
     for update_and_draw in balls:
         update_and_draw(screen)
@@ -384,10 +415,9 @@ while running:
     '''
     
     space.debug_draw(options)
-    screen.blit(left_base_bat_img,(100,100))
     screen.blit(gui,(0,0))
-    add_energy(1)
-    screen.blit(collection, (450,350))
+    add_energy(0)
+    #screen.blit(collection, (450,350))
     clock.tick(60)
     space.step(1/60)
     display.update()
