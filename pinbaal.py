@@ -64,11 +64,11 @@ def inputs(n):
         inputs.append((random.uniform(-6,6), random.uniform(-6,6)))
     return inputs
 
-def col(ds, position, background):
+def col(ds, tags, position, background):
     """Show balls moving based on speeds in ds starting at positions."""
     ball_surfaces = []
     positions = []
-    for i in range(len(ds)):
+    for i in tags:
         # Create surfaces for each ball with a different color
         ball_surface = pygame.Surface((40, 40), pygame.SRCALPHA)
         color = (i * 50 % 255, 255 - i * 50 % 255, (i * 100) % 255)  # Varying colors
@@ -173,7 +173,7 @@ class Base_ball:
     def __init__(self, x, y):
         self.body = Body(1, 200)
         self.body.position = x, y
-        self.shape = Circle(self.body, 10)
+        self.shape = Circle(self.body, 8)
         self.shape.elasticity = 0.75
         self.shape.friction = 0.5
         self.shape.collision_type = ball_c_t
@@ -196,25 +196,23 @@ class Post:
     def __init__(self, x, y):
         self.body = Body(body_type=Body.STATIC)
         self.body.position = x, y
-        self.shape = Circle(self.body, 10)
+        self.shape = Circle(self.body, 7)
         self.shape.elasticity = 0.75
         self.shape.friction = 0.5
+        self.shape.color = (255, 105, 205, 50)
         self.shape.collision_type = post_c_t
         space.add(self.body, self.shape)
 
-    def animation(self):
-        n = transform.rotate(base_ball_img, -degrees(self.body.angle))
-        screen.blit(n, (self.body.position[0] - n.get_width() //
-                    2, self.body.position[1] - n.get_height() // 2))
-        if self.body.velocity.length > 1000:
-            self.body.velocity *= 0.99
-        pangle = atan2(self.body.velocity[0] - 0, self.body.velocity[1] - 0) - 3.14159
-        if self.body.velocity.length > 400:
-            gfxdraw.rectangle(screen, (self.body.position[0] + randint(50, 100) * sin(pangle),
-                                       self.body.position[1] + randint(50, 100) * cos(pangle), 10, 10), (0, randint(0, 255), randint(0, 255)))
-            gfxdraw.box(screen, (self.body.position[0] + randint(25, 100) * sin(pangle),
-                                 self.body.position[1] + randint(25, 100) * cos(pangle), 10, 10), (0, randint(0, 255), randint(0, 255)))
-
+class Bumper:
+    def __init__(self, x, y, vert, e, c_t):
+        self.body = Body(body_type=Body.STATIC)
+        self.body.position = x, y
+        self.shape = Poly(self.body, vert)
+        self.shape.elasticity = e
+        self.shape.friction = 0.1
+        self.shape.collision_type = c_t
+        self.shape.color = (255, 165, 0, 100)
+        space.add(self.body, self.shape)
 
 def Poly_object(x, y, vect, e, c_t):
     body = Body(1, 1, Body.KINEMATIC)
@@ -251,15 +249,25 @@ def collision_begin(arbiter, space, data):
     total_ke = arbiter.total_ke
     v1 = shape1.body.velocity
     v2 = shape2.body.velocity
-    #animation_info = give_info_to_model(total_ke, v1, v2)
-    #run_animation(shape2.body.pos)
+    vx = str(shape1.body.velocity[0])
+    vy = str(shape1.body.velocity[1])
+    collision_info = vx + ", " + vy
+    # f = open("pinball_collision.txt", "w")
+    # f.write(collision_info)
+    # f.close()
+    # with open("pinball_collision.txt", 'r') as file:
+    #     while (1):
+    #         updated_content = file.read()
+    #         if collision_info != updated_content:
+    #                 #parse updated_content into variables
+    #                 #begin_col()
+    #                 break
+    tags = [0, 1, 2, 3]
+    balls.append(col(inputs(4), tags, shape2.body.position, background))
     space.remove(shape2)
     return True
 
-def collision_end(arbiter, space, data):
-    shape1, shape2 = arbiter.shapes
-    space.remove(shape2)
-    return True
+
 
 
 #Initializing Game Variables
@@ -276,8 +284,18 @@ base_ball = Base_ball(200, 180)
 
 num_post = 15
 
+
+vert = [(-15, 0), (15, 0), (0, -20)]
+booster = Bumper(200, 150, vert, 2.5, other_c_t)
+vert = [(0, -40), (0, 40), (20, 0)]
+booster_left = Bumper(51, 250, vert, 2.5, other_c_t)
+vert = [(0, -40), (0, 40), (-20, 0)]
+booster_right = Bumper(349, 250, vert, 2.5, other_c_t)
+
+
 for post in range(15):
     post = Post(randint(gameframe_left+20, gameframe_right-20), randint(gameframe_top+20, gameframe_bottom-150))
+
 
 
 
@@ -310,13 +328,13 @@ gui = pygame.image.load("img\\gui.png")
 background = pygame.Surface((800, 600))
 background.fill((0, 0, 0))  # Fill with black
 balls = []  # To store all `update_and_draw` functions
-balls.append(col(inputs(0), (0,0), background))
+balls.append(col(inputs(0), [], (0,0), background))
 
 while running:
     screen.fill((0,0,0))
     balltopost_handler = space.add_collision_handler(1, 2)
     balltopost_handler.begin = collision_begin
-    balltopost_handler.end = collision_end
+    
 
 
     #screen.blit(bg, (0, 0))
@@ -345,10 +363,7 @@ while running:
             if ev.key == pygame.K_RIGHT:
                 #right_base_bat.body.angular_velocity = 5
                     right = False
-        if ev.type == pygame.MOUSEBUTTONDOWN:
-            if ev.button == 1:  # Left mouse button
-                # Add a new ball's behavior to the list
-                balls.append(col( inputs(4), ev.pos, background))
+
 
     if base_ball.body.position[1] > 800:
         res = 1
