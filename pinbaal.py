@@ -369,7 +369,8 @@ while running:
     '''
     
     space.debug_draw(options)
-    screen.blit(left_base_bat_img,(100,100))
+    left_base_bat.animation_left(left_base_bat_img, -0.80285, 0.80285)
+    base_ball.animation()
     screen.blit(gui,(0,0))
     add_energy(1)
     screen.blit(collection, (450,350))
