@@ -4,8 +4,6 @@ from math import degrees, sin, cos, atan2
 from random import randint
 import pygame
 import random
-
-
 init()
 screen = display.set_mode((800, 600))
 collection = pygame.Surface((300,200))
@@ -34,6 +32,7 @@ def add_energy(e):
     for co in particle_counter]
     positions=((510,350),(670,350),(600,420),(510,500),(690,500))
     score = font2.render(str(round(total_energy)), True, (255, 249, 189))  # White text color
+
     screen.blit(score, (600, 185))  
     for surface, position in zip(surfaces, positions):
         screen.blit(surface, position)
@@ -361,13 +360,15 @@ background = pygame.image.load("img\\background.png")
 balls = []  # To store all `update_and_draw` functions
 balls.append(col([], (0,0), background))
 
+balltopost_handler = space.add_collision_handler(1, 2)
+balltopost_handler.begin = collision_begin
+
 while running:
+
+    if len(balls) >= 2:
+        balls.pop(0)
     screen.fill((0,0,0))
-    balltopost_handler = space.add_collision_handler(1, 2)
-    balltopost_handler.begin = collision_begin
     
-
-
     #screen.blit(bg, (0, 0))
 
     
@@ -421,6 +422,9 @@ while running:
     add_energy(0)
     #screen.blit(collection, (450,350))
     clock.tick(60)
+    fps = clock.get_fps()  # Get current FPS
+    fps_surface = font1.render(f"FPS: {fps:.2f}", True, white)
+    screen.blit(fps_surface, (10, 10))
     space.step(1/60)
     display.update()
     
