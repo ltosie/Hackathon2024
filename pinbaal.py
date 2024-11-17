@@ -308,6 +308,8 @@ Rectangle_object(90,580,0,(100,180))
 Rectangle_object(310,580,0,(100,180))
 Rectangle_object(40,457,-45*(3.14/180),(100,200))
 Rectangle_object(360,457,45*(3.14/180),(100,200))
+Rectangle_object(50,50,45*(3.14/180),(50,50))
+Rectangle_object(350,50,-45*(3.14/180),(50,50))
 
 
 
@@ -325,6 +327,7 @@ running = True
 right = False
 left = False
 gui = pygame.image.load("img\\gui.png")
+gui1 = pygame.image.load("img\\gui1.png")
 background = pygame.Surface((800, 600))
 background.fill((0, 0, 0))  # Fill with black
 balls = []  # To store all `update_and_draw` functions
@@ -339,10 +342,10 @@ while running:
 
     #screen.blit(bg, (0, 0))
 
-
+    
     left_base_bat.animation_left(left_base_bat_img, -0.80285, 0.80285)
     right_base_bat.animation_right(right_base_bat_img, 0.80285, -0.80285)
-
+    
     
     
     for ev in event.get():
@@ -375,13 +378,18 @@ while running:
     
     for update_and_draw in balls:
         update_and_draw(screen)
+    '''
+    left_base_bat.animation_left(left_base_bat_img, -0.80285, 0.80285)
+    right_base_bat.animation_right(right_base_bat_img, 0.80285, -0.80285)
+    '''
     
     space.debug_draw(options)
+    screen.blit(left_base_bat_img,(100,100))
+    screen.blit(gui,(0,0))
     add_energy(1)
     screen.blit(collection, (450,350))
     clock.tick(60)
     space.step(1/60)
-    #screen.blit(gui,(0,0))
     display.update()
     
         
